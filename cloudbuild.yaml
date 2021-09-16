@@ -1,0 +1,16 @@
+steps:
+- name: maven:3-jdk-11
+  entrypoint: mvn
+  args: [ 'package','-Dmaven.test.skip=true' ]
+- name: gcr.io/cloud-builders/docker
+  args: ['build', '-t', 'us-east1-docker.pkg.dev/java-mess-around-playground/todo/todo',
+         '--build-arg=JAR_FILE=target/todo-0.0.1.jar', '.']
+- name: gcr.io/cloud-builders/docker
+  args: ['push', 'us-east1-docker.pkg.dev/java-mess-around-playground/todo/todo']
+- name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+  entrypoint: gcloud
+  args: ['run', 'deploy', 'todo', '--image',
+         'us-east1-docker.pkg.dev/java-mess-around-playground/todo/todo', '--region',
+         'us-east1', '--platform', 'managed', '--tag', 'prod']
+images: 
+- 'us-east1-docker.pkg.dev/java-mess-around-playground/todo/todo'
